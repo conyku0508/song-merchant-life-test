@@ -1,8 +1,8 @@
-name: Deploy M3 preview to GitHub Pages
+name: Deploy M4 preview to GitHub Pages
 on:
   push:
     branches: [main]
-    paths: [m3.part-*.b64, .github/workflows/pages.yml]
+    paths: [m4.part-*.b64, .github/workflows/pages.yml]
   workflow_dispatch:
 permissions:
   contents: read
@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'Publish M3')
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'Publish M4')
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -25,10 +25,10 @@ jobs:
         run: |
           python3 - <<'PY'
           import base64, hashlib, io, json, pathlib, zipfile
-          root = pathlib.Path('_site/releases/m3-20261027-1')
-          parts = sorted(pathlib.Path('.').glob('m3.part-*.b64'))
+          root = pathlib.Path('_site/releases/m4-20261027-1')
+          parts = sorted(pathlib.Path('.').glob('m4.part-*.b64'))
           data = base64.b64decode(b''.join(p.read_bytes() for p in parts))
-          if hashlib.sha256(data).hexdigest() != 'b9cc6c77cc8d976a1c3a46a40cd545b985249314b266abab2381ba18ef679cdb':
+          if hashlib.sha256(data).hexdigest() != 'c9a513437a218f465763511529ab937df255da2007a373d5391335300edf66d7':
               raise ValueError('Release archive checksum mismatch')
           with zipfile.ZipFile(io.BytesIO(data)) as archive:
               if any(pathlib.PurePosixPath(n).is_absolute() or '..' in pathlib.PurePosixPath(n).parts for n in archive.namelist()):
@@ -42,11 +42,12 @@ jobs:
           print('Verified', len(manifest), 'static files')
           destination = pathlib.Path('_site')
           (destination / '.nojekyll').write_text('')
-          redirect = '<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>北宋商旅人生 M3</title><a href="releases/RELEASE_ID/">開啟 M3 測試版</a><script>location.replace("releases/RELEASE_ID/"+location.search+location.hash)</script></html>'
-          (destination / 'index.html').write_text(redirect.replace('RELEASE_ID','m3-20261027-1'))
-          previous = destination / 'releases/m2-20261026-1'
-          previous.mkdir(parents=True, exist_ok=True)
-          (previous / 'index.html').write_text(redirect.replace('releases/RELEASE_ID/','../RELEASE_ID/').replace('RELEASE_ID','m3-20261027-1'))
+          redirect = '<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>北宋商旅人生 M4</title><a href="releases/RELEASE_ID/">開啟 M4 測試版</a><script>location.replace("releases/RELEASE_ID/"+location.search+location.hash)</script></html>'
+          (destination / 'index.html').write_text(redirect.replace('RELEASE_ID','m4-20261027-1'))
+          for old_release in ['m2-20261026-1','m3-20261027-1']:
+              previous = destination / 'releases' / old_release
+              previous.mkdir(parents=True, exist_ok=True)
+              (previous / 'index.html').write_text(redirect.replace('releases/RELEASE_ID/','../RELEASE_ID/').replace('RELEASE_ID','m4-20261027-1'))
 
           PY
       - name: Configure Pages
