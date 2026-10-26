@@ -1,5 +1,5 @@
 @font-face{font-family:SongUI;src:local("PingFang TC"),local("Microsoft JhengHei");font-display:swap}
-:root{color-scheme:dark;font-family:SongUI,"Noto Serif TC",serif;background:#0e1716;color:#e8dab5;font-size:16px}
+:root{color-scheme:only light;font-family:SongUI,"Noto Serif TC",serif;background:#0e1716;color:#e8dab5;font-size:16px}
 body{margin:0;min-height:100dvh;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 45%,#35433b,#101817 70%)}
 .game-shell{--gold:#b39a61;--paper:#ecdcaf;--ink:#1c2c26;--text:16px;width:min(100%,1180px);height:min(100dvh,560px);position:relative;isolation:isolate;box-shadow:0 15px 70px #000b;background:#182e28}
 .game-shell *{box-sizing:border-box}
