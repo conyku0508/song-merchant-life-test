@@ -2,7 +2,7 @@ name: Deploy M1 preview to GitHub Pages
 on:
   push:
     branches: [main]
-    paths: [site.part-*.b64, .github/workflows/pages.yml]
+    paths: [site.part-*.b64, .github/workflows/pages.yml, "patches/**"]
   workflow_dispatch:
 permissions:
   contents: read
@@ -40,6 +40,22 @@ jobs:
               if actual != expected:
                   raise ValueError('Checksum mismatch: ' + name)
           print('Verified', len(manifest), 'static files')
+          patch_manifest_path = pathlib.Path('patches/manifest.json')
+          if patch_manifest_path.exists():
+              patch = json.loads(patch_manifest_path.read_text())
+              if set(patch['files']) != {'index.html', 'ui/shell.css'}:
+                  raise ValueError('Unexpected visual patch path')
+              for name, expected in patch['files'].items():
+                  data = (pathlib.Path('patches') / name).read_bytes()
+                  if hashlib.sha256(data).hexdigest() != expected:
+                      raise ValueError('Patch checksum mismatch: ' + name)
+                  (root / name).write_bytes(data)
+                  manifest[name] = expected
+              (root / 'BUILD_MANIFEST.json').write_text(json.dumps(manifest, indent=2))
+              release = json.loads((root / 'release.json').read_text())
+              release['release'] = patch['release']
+              (root / 'release.json').write_text(json.dumps(release, ensure_ascii=False, indent=2))
+              print('Verified and applied', len(patch['files']), 'visual patch files')
           PY
       - name: Configure Pages
         uses: actions/configure-pages@v5
