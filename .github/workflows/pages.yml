@@ -1,0 +1,48 @@
+name: Deploy M1 preview to GitHub Pages
+on:
+  push:
+    branches: [main]
+    paths: [site.zip, .github/workflows/pages.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'Publish M1')
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Unpack the verified static release
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib, zipfile
+          root = pathlib.Path('_site')
+          with zipfile.ZipFile('site.zip') as archive:
+              if any(pathlib.PurePosixPath(n).is_absolute() or '..' in pathlib.PurePosixPath(n).parts for n in archive.namelist()):
+                  raise ValueError('Unsafe archive path')
+              archive.extractall(root)
+          manifest = json.loads((root / 'BUILD_MANIFEST.json').read_text())
+          for name, expected in manifest.items():
+              actual = hashlib.sha256((root / name).read_bytes()).hexdigest()
+              if actual != expected:
+                  raise ValueError('Checksum mismatch: ' + name)
+          print('Verified', len(manifest), 'static files')
+          PY
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
