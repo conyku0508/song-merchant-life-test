@@ -1,0 +1,55 @@
+@font-face{font-family:SongUI;src:local("PingFang TC"),local("Microsoft JhengHei");font-display:swap}
+:root{color-scheme:dark;font-family:SongUI,"Noto Serif TC",serif;background:#0e1716;color:#e8dab5;font-size:16px}
+body{margin:0;min-height:100dvh;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 45%,#35433b,#101817 70%)}
+.game-shell{--gold:#b39a61;--paper:#ecdcaf;--ink:#1c2c26;--text:16px;width:min(100%,1180px);height:min(100dvh,560px);position:relative;isolation:isolate;box-shadow:0 15px 70px #000b;background:#182e28}
+.game-shell *{box-sizing:border-box}
+.game-shell [hidden]{display:none!important}
+.game-shell button,.game-shell select,.game-shell input{font:inherit;font-size:var(--text);border-radius:0}
+.game-shell button{min-width:44px;min-height:44px;border:1px solid var(--gold);box-shadow:inset 0 0 0 2px #152b24,inset 0 3px 0 #c2ac73;background:linear-gradient(#3b5140,#273b30);color:var(--paper);padding:6px 12px;cursor:pointer;letter-spacing:.04em;touch-action:manipulation}
+.game-shell button:hover{background:#53644b;color:#fff2d4}
+.game-shell button:active,.game-shell button[aria-pressed=true],.game-shell button[aria-selected=true]{background:linear-gradient(#805039,#563624);box-shadow:inset 0 0 0 2px #2e251c,inset 0 3px 0 #c4a46d}
+.game-shell button:disabled{opacity:.4;cursor:default}
+.game-shell button:focus-visible,.game-shell input:focus-visible,.game-shell select:focus-visible{outline:2px solid #fff2c2;outline-offset:2px}
+.game-shell .screen{position:absolute;inset:0;display:grid;grid-template-rows:44px minmax(0,1fr) 44px 22px;gap:6px;padding:max(10px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));background:repeating-linear-gradient(40deg,#233b30 0,#233b30 2px,#20382e 2px,#20382e 5px);border:2px solid var(--gold)}
+.game-shell .screen::after{content:"";position:absolute;inset:3px;pointer-events:none;border:1px solid #647356}
+.game-shell .screen[inert]{visibility:hidden}
+.game-shell .screen-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 12px;background:#142b25;border:1px solid var(--gold);box-shadow:inset 0 0 0 3px #253c2e}
+.game-shell h1,.game-shell h2,.game-shell h3,.game-shell p{margin:0}
+.game-shell h1{font-size:22px;font-weight:500;letter-spacing:.12em;white-space:nowrap}
+.game-shell .header-meta{font-size:14px;color:#d1c39c;white-space:nowrap}
+.game-shell .preview-label{font-size:12px;color:#f1d59c;border:1px solid #8c784b;padding:3px 5px;white-space:nowrap}
+.game-shell .screen-main{min-height:0;display:grid;gap:10px}
+.game-shell .screen-footer{display:flex;align-items:center;gap:8px;min-height:44px}
+.game-shell .screen-footer .spacer{flex:1}
+.game-shell .screen-note{align-self:center;white-space:nowrap;color:#c0b188;font-size:12px;letter-spacing:.03em;text-align:right}
+.game-shell .frame{border:1px solid var(--gold);box-shadow:inset 0 0 0 3px #40523b;background:#142c25;padding:12px;min-height:0}
+.game-shell .kicker{font-size:12px;letter-spacing:.22em;color:#bba46e}
+.game-shell .muted{color:#c4b38b;font-size:14px;line-height:1.5}
+.game-shell .seal{display:inline-grid;place-items:center;color:#e4b081;border:2px solid #975b40;font-size:14px;letter-spacing:.12em;padding:3px;writing-mode:vertical-rl}
+.game-shell .scene{background-image:url('../assets/concept-reference.png');filter:brightness(1.13) contrast(1.02) saturate(1.03);background-size:320% auto;background-position:.5% 13%;border:1px solid var(--gold);position:relative;image-rendering:auto;min-height:0}
+.game-shell .scene::after{content:"汴京 · 商旅街景";position:absolute;left:10px;bottom:8px;background:#173126e8;border:1px solid #af9965;color:#efdcad;font-size:13px;padding:5px 9px;letter-spacing:.2em}
+.game-shell .portrait{background-image:url('../assets/concept-reference.png');filter:brightness(1.13) contrast(1.02) saturate(1.03);background-size:auto 280%;background-position:92% 28%;border:1px solid var(--gold);min-height:0;background-color:#788169}
+.game-shell .paper{background:repeating-linear-gradient(0deg,#ead7ab,#ead7ab 2px,#e5d0a2 3px);color:#2e3427;border:1px solid #bd9d5e;padding:12px;box-shadow:inset 0 0 0 3px #b79e6c}
+.game-shell .paper .muted{color:#615c43}
+.game-shell .paper h2{font-size:22px;font-weight:500;letter-spacing:.08em}
+.game-shell .paper p{font-size:var(--text);line-height:1.55}
+.game-shell .nav-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:center}
+.game-shell .nav-grid button{text-align:left;display:flex;align-items:center;gap:8px}
+.game-shell .nav-grid button span{color:#c8b27c;font-size:21px}
+.game-shell .pagination{display:flex;gap:8px;align-items:center;justify-content:flex-end;flex:1}
+.game-shell .pagination output{font-size:var(--text);min-width:60px;text-align:center;color:#e6d2a2}
+.game-shell .list{display:flex;flex-direction:column;gap:8px;min-height:0;justify-content:center}
+.game-shell .list-row{min-height:52px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border:1px solid #8a8057;background:#213a2e;padding:6px 10px}
+.game-shell .list-row strong{font-size:var(--text);font-weight:500;letter-spacing:.06em;display:block}
+.game-shell .list-row small{font-size:13px;color:#bdba99;display:block;margin-top:4px}
+.game-shell .list-row button{min-width:92px}
+.game-shell .large-text{--text:20px}
+.game-shell.large-text{--text:20px}
+.game-shell.large-text .muted{font-size:17px}
+.game-shell.large-text .screen h1{font-size:24px}
+.game-shell.large-text .header-meta{display:none}
+.game-shell .empty{padding:18px;border:1px dashed #a78f5b;color:#d0c19c;text-align:center}
+.game-shell #failure{position:absolute;inset:20px;z-index:999;background:#31261e;padding:20px;border:2px solid #caa771}
+@media(max-width:790px){.game-shell .header-meta{font-size:12px}.game-shell .screen-header{padding:0 8px;gap:5px}.game-shell h1{font-size:20px}.game-shell button{padding:5px 9px}.game-shell .frame,.game-shell .paper{padding:10px}.game-shell .screen-note{font-size:11px}}
+@media(max-height:375px){.game-shell .screen{gap:5px;padding-top:max(6px,env(safe-area-inset-top));padding-bottom:max(5px,env(safe-area-inset-bottom))}.game-shell .screen-note{font-size:11px}.game-shell .frame,.game-shell .paper{padding:8px}}
+@media(prefers-reduced-motion:no-preference){.game-shell .screen{animation:appear .12s ease-out}@keyframes appear{from{opacity:.65}to{opacity:1}}}
