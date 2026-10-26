@@ -1,7 +1,7 @@
 {
-  "release": "20261026-m1-light1",
+  "release": "20261026-m1-color2",
   "files": {
-    "index.html": "16661c67a4201c953b6bbdb3d4baedbc4a1c6ccf6a06e514eec0d026887b9e37",
-    "ui/shell.css": "296f9bc30f52ee7eb4a5d6ae92e0d8b4dce535c861a8687be2359d6175ddff2e"
+    "index.html": "6175dcc6326bd0afaeb3946552f2861a23efab5d0cfe7ff44da8d84400faa2bd",
+    "ui/shell.css": "3f0a9e965946f56c3b5bf6dce9be1c56938093c3a1adf2cda5a7e7ce1a509242"
   }
 }
