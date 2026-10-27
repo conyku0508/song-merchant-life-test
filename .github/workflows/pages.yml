@@ -2,7 +2,7 @@ name: Deploy M4 and recruitment experience lab
 on:
   push:
     branches: [main]
-    paths: [m4.part-*.b64, recruitment-20261027-1.part-*.b64, .github/workflows/pages.yml]
+    paths: [m4.part-*.b64, recruitment-20261027-2.part-*.b64, .github/workflows/pages.yml]
   workflow_dispatch:
 permissions:
   contents: read
@@ -49,8 +49,8 @@ jobs:
               previous.mkdir(parents=True, exist_ok=True)
               (previous / 'index.html').write_text(redirect.replace('releases/RELEASE_ID/','../RELEASE_ID/').replace('RELEASE_ID','m4-20261027-1'))
 
-          lab_data = base64.b64decode(b''.join(p.read_bytes() for p in sorted(pathlib.Path('.').glob('recruitment-20261027-1.part-*.b64'))))
-          if hashlib.sha256(lab_data).hexdigest() != 'bcb82925d1e66d0ace46561216075c474e58cb5d43102c03d715ce8e474bbf5b':
+          lab_data = base64.b64decode(b''.join(p.read_bytes() for p in sorted(pathlib.Path('.').glob('recruitment-20261027-2.part-*.b64'))))
+          if hashlib.sha256(lab_data).hexdigest() != 'bdf22052d8cf20a25f06bf62ba4d1b055196034b00e9e508db8077c1dd2bdce1':
               raise ValueError('Recruitment lab checksum mismatch')
           lab = destination / 'labs/recruitment'
           with zipfile.ZipFile(io.BytesIO(lab_data)) as archive:
