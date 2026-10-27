@@ -1,8 +1,8 @@
-name: Deploy M4 and recruitment experience lab
+name: Deploy 天下豪商 preview
 on:
   push:
     branches: [main]
-    paths: [m4.part-*.b64, recruitment-20261027-3.part-*.b64, .github/workflows/pages.yml]
+    paths: [m4.part-*.b64, branding-20261027-1.part-*.b64, .github/workflows/pages.yml]
   workflow_dispatch:
 permissions:
   contents: read
@@ -40,32 +40,59 @@ jobs:
               if actual != expected:
                   raise ValueError('Checksum mismatch: ' + name)
           print('Verified', len(manifest), 'static files')
+          import shutil
+          branding_data = base64.b64decode(b''.join(p.read_bytes() for p in sorted(pathlib.Path('.').glob('branding-20261027-1.part-*.b64'))))
+          if hashlib.sha256(branding_data).hexdigest() != '65529f08c9f285960ac8bbfbcb26148d45e055668e1c2f5b3c5d5f211496d4f7':
+              raise ValueError('Branding archive checksum mismatch')
           destination = pathlib.Path('_site')
+          branded = destination / 'releases/m4-20261027-2'
+          lab = destination / 'labs/recruitment-20261027-4'
+          shutil.copytree(root, branded)
+          with zipfile.ZipFile(io.BytesIO(branding_data)) as archive:
+              names = archive.namelist()
+              if any(pathlib.PurePosixPath(n).is_absolute() or '..' in pathlib.PurePosixPath(n).parts for n in names):
+                  raise ValueError('Unsafe branding archive path')
+              patch = json.loads(archive.read('MANIFEST.json'))
+              for name, expected in patch['files'].items():
+                  data = archive.read(name)
+                  if hashlib.sha256(data).hexdigest() != expected:
+                      raise ValueError('Brand file mismatch: ' + name)
+                  category, relative = name.split('/', 1)
+                  if category not in ['main','lab']:
+                      raise ValueError('Unexpected brand file category')
+                  target = (branded if category == 'main' else lab) / relative
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  target.write_bytes(data)
+          expected_main = dict(manifest)
+          for name, expected in patch['files'].items():
+              if name.startswith('main/'):
+                  expected_main[name[5:]] = expected
+          for name, expected in expected_main.items():
+              if hashlib.sha256((branded / name).read_bytes()).hexdigest() != expected:
+                  raise ValueError('Branded runtime mismatch: ' + name)
+          (branded / 'BUILD_MANIFEST.json').write_text(json.dumps(expected_main, indent=2))
+          release = json.loads((branded / 'release.json').read_text())
+          release.update(gameTitle='天下豪商', release='m4-20261027-2', brandingOnly=True)
+          (branded / 'release.json').write_text(json.dumps(release, ensure_ascii=False, indent=2))
+          lab_manifest = {name[4:]:sha for name,sha in patch['files'].items() if name.startswith('lab/')}
+          (lab / 'BUILD_MANIFEST.json').write_text(json.dumps(lab_manifest, indent=2))
+          (lab / 'release.json').write_text(json.dumps({'release':'recruitment-20261027-4','gameTitle':'天下豪商','connectedToM4World':False},ensure_ascii=False,indent=2))
+          def redirect(target):
+              return '<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>天下豪商</title><a href="'+target+'">開啟天下豪商</a><script>location.replace("'+target+'"+location.search+location.hash)</script></html>'
           (destination / '.nojekyll').write_text('')
-          redirect = '<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>北宋商旅人生 M4</title><a href="releases/RELEASE_ID/">開啟 M4 測試版</a><script>location.replace("releases/RELEASE_ID/"+location.search+location.hash)</script></html>'
-          (destination / 'index.html').write_text(redirect.replace('RELEASE_ID','m4-20261027-1'))
-          for old_release in ['m2-20261026-1','m3-20261027-1']:
-              previous = destination / 'releases' / old_release
-              previous.mkdir(parents=True, exist_ok=True)
-              (previous / 'index.html').write_text(redirect.replace('releases/RELEASE_ID/','../RELEASE_ID/').replace('RELEASE_ID','m4-20261027-1'))
-
-          lab_data = base64.b64decode(b''.join(p.read_bytes() for p in sorted(pathlib.Path('.').glob('recruitment-20261027-3.part-*.b64'))))
-          if hashlib.sha256(lab_data).hexdigest() != 'f8729ec5625b272239fbbd18f688a6898886ed27bb0114a68c9250034cb17d91':
-              raise ValueError('Recruitment lab checksum mismatch')
-          lab = destination / 'labs/recruitment-20261027-3'
-          with zipfile.ZipFile(io.BytesIO(lab_data)) as archive:
-              if any(pathlib.PurePosixPath(n).is_absolute() or '..' in pathlib.PurePosixPath(n).parts for n in archive.namelist()):
-                  raise ValueError('Unsafe lab archive path')
-              archive.extractall(lab)
-          lab_manifest = json.loads((lab / 'BUILD_MANIFEST.json').read_text())
-          for name, expected in lab_manifest.items():
-              if hashlib.sha256((lab / name).read_bytes()).hexdigest() != expected:
-                  raise ValueError('Lab file checksum mismatch: ' + name)
-          alias = destination / 'labs/recruitment'
-          alias.mkdir(parents=True, exist_ok=True)
-          (alias / 'index.html').write_text('<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>北宋商旅人生招募試演</title><a href="../recruitment-20261027-3/">開啟新版聲畫試演</a><script>location.replace("../recruitment-20261027-3/"+location.search+location.hash)</script></html>')
-          print('Verified', len(lab_manifest), 'recruitment lab files; M4 runtime preserved')
-
+          (destination / 'index.html').write_text(redirect('releases/m4-20261027-2/'))
+          for old in ['m2-20261026-1','m3-20261027-1','m4-20261027-1']:
+              alias = destination / 'releases' / old
+              alias.mkdir(parents=True, exist_ok=True)
+              (alias / 'index.html').write_text(redirect('../m4-20261027-2/'))
+          old_manifest = dict(manifest)
+          old_manifest['index.html'] = hashlib.sha256((root / 'index.html').read_bytes()).hexdigest()
+          (root / 'BUILD_MANIFEST.json').write_text(json.dumps(old_manifest, indent=2))
+          for old in ['recruitment','recruitment-20261027-3']:
+              alias = destination / 'labs' / old
+              alias.mkdir(parents=True, exist_ok=True)
+              (alias / 'index.html').write_text(redirect('../recruitment-20261027-4/'))
+          print('Verified', len(expected_main), 'branded runtime files and', len(lab_manifest), 'lab files; game rules unchanged')
           PY
       - name: Configure Pages
         uses: actions/configure-pages@v5
