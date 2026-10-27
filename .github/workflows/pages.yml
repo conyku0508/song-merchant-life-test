@@ -2,7 +2,7 @@ name: Deploy 天下豪商 preview
 on:
   push:
     branches: [main]
-    paths: [m4.part-*.b64, branding-20261027-1.part-*.b64, .github/workflows/pages.yml]
+    paths: [m4.part-*.b64, branding-20261027-1.part-*.b64, integration-20261027-1.part-*.b64, .github/workflows/pages.yml]
   workflow_dispatch:
 permissions:
   contents: read
@@ -92,7 +92,37 @@ jobs:
               alias = destination / 'labs' / old
               alias.mkdir(parents=True, exist_ok=True)
               (alias / 'index.html').write_text(redirect('../recruitment-20261027-4/'))
-          print('Verified', len(expected_main), 'branded runtime files and', len(lab_manifest), 'lab files; game rules unchanged')
+          integration_data = base64.b64decode(b''.join(p.read_bytes() for p in sorted(pathlib.Path('.').glob('integration-20261027-1.part-*.b64'))))
+          if hashlib.sha256(integration_data).hexdigest() != 'b524ce0d026604ed13267834d26726bcf68148a5c4199f83b7463618d957cc2e':
+              raise ValueError('Integration archive checksum mismatch')
+          integrated = destination / 'releases/m4-20261027-3'
+          shutil.copytree(branded, integrated)
+          with zipfile.ZipFile(io.BytesIO(integration_data)) as archive:
+              if any(pathlib.PurePosixPath(n).is_absolute() or '..' in pathlib.PurePosixPath(n).parts for n in archive.namelist()):
+                  raise ValueError('Unsafe integration archive path')
+              integrated_patch = json.loads(archive.read('MANIFEST.json'))
+              for name, expected in integrated_patch['files'].items():
+                  content = archive.read(name)
+                  if hashlib.sha256(content).hexdigest() != expected:
+                      raise ValueError('Integration mismatch: '+name)
+                  target = integrated / name
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  target.write_bytes(content)
+          integrated_manifest = json.loads((integrated / 'BUILD_MANIFEST.json').read_text())
+          for name, expected in integrated_manifest.items():
+              if hashlib.sha256((integrated / name).read_bytes()).hexdigest() != expected:
+                  raise ValueError('Integrated runtime mismatch: '+name)
+          (destination / 'index.html').write_text(redirect('releases/m4-20261027-3/'))
+          for old in ['m2-20261026-1','m3-20261027-1','m4-20261027-1','m4-20261027-2']:
+              alias = destination / 'releases' / old
+              alias.mkdir(parents=True, exist_ok=True)
+              (alias / 'index.html').write_text(redirect('../m4-20261027-3/'))
+              old_manifest_file = alias / 'BUILD_MANIFEST.json'
+              if old_manifest_file.exists():
+                  old_manifest_data = json.loads(old_manifest_file.read_text())
+                  old_manifest_data['index.html'] = hashlib.sha256((alias / 'index.html').read_bytes()).hexdigest()
+                  old_manifest_file.write_text(json.dumps(old_manifest_data, indent=2))
+          print('Verified integrated runtime files:',len(integrated_manifest),'save v4; original M4 archive retained')
           PY
       - name: Configure Pages
         uses: actions/configure-pages@v5
